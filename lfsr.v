@@ -38,10 +38,10 @@ module lfsr(
 		 if(rst) begin
 			  $display("seed_no : %d", seed_no);
 			  if (seed_no == 1)
-					lfsr <= -2376;
+					lfsr <= -2886;
 			  else if (seed_no == 2)
-					//lfsr <= 9078;
-					lfsr <= -2376;
+					lfsr <= 1702;
+					//lfsr <= -2376;
 			  else
 					lfsr <= 0;
 			  lfsr_done <= 0;

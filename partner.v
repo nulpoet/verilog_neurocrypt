@@ -34,10 +34,10 @@ module partner(
 
 parameter K = 2;
 parameter N = 3;
-parameter L = 1;
-parameter miunus_L = -1;
-parameter L_plus_1 = 2;
-parameter miunus_L_plus_1 = -2;
+parameter L = 2;
+parameter miunus_L = -2;
+parameter L_plus_1 = 3;
+parameter miunus_L_plus_1 = -3;
 parameter W_WIDTH = 13;
 
 integer ii, jj, kk;
@@ -63,8 +63,8 @@ lfsr uut_lfsr  (
 		.lfsr(lfsr_val)
 	);
 
-reg [12:0] acc_feed;
-reg [12:0] acc_value;
+reg signed [12:0] acc_feed;
+reg signed [12:0] acc_value;
 
 /*
 always @ (posedge ctrl[0]) begin
@@ -126,7 +126,7 @@ always @ (posedge clk or posedge rst) begin
 			end
 		end
 		
-		$display("ctrl : %b | prev_ctrl : %b   at partner_no : %d ", ctrl, prev_ctrl, partner_no);
+		//$display("ctrl : %b | prev_ctrl : %b   at partner_no : %d ", ctrl, prev_ctrl, partner_no);
 		prev_ctrl = ctrl;
 		
 	
@@ -169,6 +169,7 @@ always @ (posedge clk or posedge rst) begin
 				state_N = state_N + 1;
 				
 				if (state_N == N) begin
+					$display("[%d] for d[%d] acc_value = %d", partner_no, state_K, acc_value);
 					// bit 0 maps to  1 &
 					// bit 1 maps to -1
 					// xoring 0 keeps parity same.. similar to multiplication of 1 with (1 or 0)
@@ -176,7 +177,7 @@ always @ (posedge clk or posedge rst) begin
 						d[state_K] = 1'b0;
 					else
 						d[state_K] = 1'b1;
-					
+					$display("[%d] d[%d] = %b", partner_no, state_K, d[state_K]);
 					state_N = 0;
 					acc_value = 0;
 					
@@ -187,7 +188,7 @@ always @ (posedge clk or posedge rst) begin
 							if (myout)
 							myout = myout ^ d[ii];
 						end
-						//$display("myout : %b", myout);
+						//$display("[%d] d = %b", partner_no, d[0]);
 						dirty = 0;
 					end
 				end
@@ -196,30 +197,35 @@ always @ (posedge clk or posedge rst) begin
 		
 		else if (ctrl == 3'b100) begin // learn
 			if (myout == out_other) begin
+				$display("[%d] w : ", partner_no);
 				for(ii=0; ii<K; ii=ii+1) begin
+					$display("[%d] d[%d] = %d, myoutput : %d", partner_no, ii, d[ii], myout);
 					if (d[ii] == myout) begin
 						for(jj=0; jj<N; jj=jj+1) begin
 							for (kk=0; kk<W_WIDTH; kk=kk+1) begin
 								temp_wi[kk] = w[ii*N+jj][kk];
 							end
-							//$display("w[%d][%d] from %b", ii, jj, temp_wi);
-							$display("[%d]  w[%d][%d] from %d", partner_no, ii, jj, temp_wi);
+							//$display("[%d]  w[%d][%d] from %d", partner_no, ii, jj, temp_wi);
+							$display("%d", temp_wi);
 							if (feed[ii*N+jj])
 								temp_wi = temp_wi + 1;
 							else
 								temp_wi = temp_wi - 1;
 							
 							//$display("... %b", temp_wi);
-							if (temp_wi[12] == 1)
+							if (temp_wi[12] == 1) begin
+								//$display("-- miunus_L_plus_1 : %d", miunus_L_plus_1);
 								if (temp_wi == miunus_L_plus_1)
 									temp_wi = miunus_L;
-							else
+							end
+							else begin
+								//$display("++ L_plus_1 : %d", L_plus_1);
 								if (temp_wi == L_plus_1)
 									temp_wi = L;
-								
-							//$display("...to %b given feed[ii*N+jj] : %d", temp_wi, feed[ii*N+jj]);
-							$display("...to %d given feed[%d] : %d", temp_wi, ii*N+jj, feed[ii*N+jj]);
+							end
 							
+							//$display("...to %d given feed[%d] : %d", temp_wi, ii*N+jj, feed[ii*N+jj]);
+							$display("%d [%d]", temp_wi, feed[ii*N+jj]);
 							for (kk=0; kk<W_WIDTH; kk=kk+1) begin
 								w[ii*N+jj][kk] = temp_wi[kk];
 							end

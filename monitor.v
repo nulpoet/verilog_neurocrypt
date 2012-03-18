@@ -49,7 +49,7 @@ module monitor(
 		);
 
 
-	reg [6-1:0] feed;
+	reg [N*K-1:0] feed;
 	//reg out_1;
 	//reg out_2;
 	reg [2:0] ctrl;
